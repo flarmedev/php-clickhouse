@@ -1,6 +1,8 @@
 /.idea
 /.vscode
 /vendor
+/node_modules
 /_
 .php-cs-fixer.cache
 composer.lock
+package-lock.json
