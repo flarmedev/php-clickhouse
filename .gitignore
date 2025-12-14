@@ -1,8 +1,32 @@
-/.idea
-/.vscode
-/vendor
-/node_modules
-/_
+# IDE
+/.idea/
+/.vscode/
+*.swp
+*.swo
+
+# Dependencies
+/vendor/
+/node_modules/
+
+# Build artifacts
+/_/
+/build/
+/coverage/
+
+# Cache files
 .php-cs-fixer.cache
+.phpunit.result.cache
+.phpbench/
+
+# Lock files (for libraries)
 composer.lock
 package-lock.json
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
