@@ -9,6 +9,8 @@ use Flarme\PhpClickhouse\Concerns\EncodesSql;
 use Flarme\PhpClickhouse\Contracts\ClientInterface;
 use Flarme\PhpClickhouse\Contracts\QueryInterface;
 use Flarme\PhpClickhouse\Contracts\ResponseInterface;
+use Flarme\PhpClickhouse\Database\Query\Builder as QueryBuilder;
+use Flarme\PhpClickhouse\Database\Schema\Builder as SchemaBuilder;
 use Flarme\PhpClickhouse\Exceptions\ClickhouseException;
 use Flarme\PhpClickhouse\Exceptions\UnsupportedBindingException;
 use GuzzleHttp\Client as HttpClient;
@@ -18,7 +20,11 @@ class Client implements ClientInterface
 {
     use EncodesSql;
 
-    private ?string $database;
+    public ?string $database {
+        get {
+            return $this->database;
+        }
+    }
 
     private HttpClient $httpClient;
 
@@ -54,16 +60,6 @@ class Client implements ClientInterface
     }
 
     /**
-     * Get the current database name.
-     *
-     * @return string|null
-     */
-    public function getDatabase(): ?string
-    {
-        return $this->database;
-    }
-
-    /**
      * @return $this
      */
     public function database(string $database): self
@@ -71,6 +67,16 @@ class Client implements ClientInterface
         $this->database = $database;
 
         return $this;
+    }
+
+    public function query(): QueryBuilder
+    {
+        return new QueryBuilder($this);
+    }
+
+    public function schema(): SchemaBuilder
+    {
+        return new SchemaBuilder($this);
     }
 
     /**

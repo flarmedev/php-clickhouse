@@ -10,7 +10,7 @@ describe('Client', function (): void {
         $client = new Client(...$params);
 
         expect($client)->toBeInstanceOf(Client::class)
-            ->and($client->getDatabase())->toBe($expectedDb);
+            ->and($client->database)->toBe($expectedDb);
     })->with([
         'minimal' => [['localhost', 8123, 'default', ''], null],
         'with database' => [['localhost', 8123, 'default', '', 'test_db'], 'test_db'],
@@ -25,7 +25,7 @@ describe('Client', function (): void {
         $result = $client->database('new_db');
 
         expect($result)->toBe($client)
-            ->and($client->getDatabase())->toBe('new_db');
+            ->and($client->database)->toBe('new_db');
     });
 
     it('throws exception when inserting empty rows', function (): void {
