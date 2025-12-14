@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<clickhouse>
+    <remote_servers>
+        <test_cluster>
+            <shard>
+                <replica>
+                    <host>replica-one</host>
+                    <port>9000</port>
+                </replica>
+                <replica>
+                    <host>replica-two</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+        </test_cluster>
+    </remote_servers>
+</clickhouse>

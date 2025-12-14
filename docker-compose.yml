@@ -1,0 +1,41 @@
+x-clickhouse: &clickhouse
+    image: clickhouse/clickhouse-server:latest
+    networks:
+        - cluster
+    extra_hosts:
+        - 'host.docker.internal:host-gateway'
+    environment:
+        CLICKHOUSE_DB: '${CLICKHOUSE_DATABASE:-database}'
+        CLICKHOUSE_USER: '${CLICKHOUSE_USERNAME:-user}'
+        CLICKHOUSE_PASSWORD: '${CLICKHOUSE_PASSWORD:-password}'
+    ulimits:
+        nofile:
+            soft: 262144
+            hard: 262144
+    healthcheck:
+        test: [ "CMD", "clickhouse-client", "--query", "SELECT 1" ]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+
+services:
+    replica-one:
+        <<: *clickhouse
+        container_name: replica-one
+        volumes:
+            - ./docker/replica-one.xml:/etc/clickhouse-server/config.d/server.xml
+            - ./docker/common.xml:/etc/clickhouse-server/config.d/common.xml
+        ports:
+            - "8123:8123"
+    replica-two:
+        <<: *clickhouse
+        container_name: replica-two
+        volumes:
+            - ./docker/replica-two.xml:/etc/clickhouse-server/config.d/server.xml
+            - ./docker/common.xml:/etc/clickhouse-server/config.d/common.xml
+        ports:
+            - "8124:8123"
+
+networks:
+    cluster:
+        driver: bridge
