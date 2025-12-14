@@ -5,8 +5,11 @@
          colors="true"
 >
     <testsuites>
-        <testsuite name="Test Suite">
-            <directory suffix="Test.php">./tests</directory>
+        <testsuite name="Unit">
+            <directory suffix="Test.php">./tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory suffix="Test.php">./tests/Feature</directory>
         </testsuite>
     </testsuites>
     <source>
@@ -15,4 +18,11 @@
             <directory>src</directory>
         </include>
     </source>
+    <php>
+        <env name="CLICKHOUSE_HOST" value="localhost"/>
+        <env name="CLICKHOUSE_PORT" value="8123"/>
+        <env name="CLICKHOUSE_USERNAME" value="user"/>
+        <env name="CLICKHOUSE_PASSWORD" value="password"/>
+        <env name="CLICKHOUSE_DATABASE" value="database"/>
+    </php>
 </phpunit>

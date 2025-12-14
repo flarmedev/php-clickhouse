@@ -1,2 +1,4 @@
 parameters:
     level: 1
+    typeAliases:
+        expression: '\Flarme\PhpClickhouse\Database\Query\Builder|\Closure(\Flarme\PhpClickhouse\Database\Query\Builder)|\Flarme\PhpClickhouse\Database\Query\Contracts\ExprressionInterface|string'

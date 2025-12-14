@@ -24,14 +24,17 @@
         "php": "^8.4",
         "guzzlehttp/guzzle": "^7.0"
     },
+    "require-dev": {
+        "pestphp/pest": "^4.1",
+        "phpstan/phpstan": "^2.1",
+        "laravel/pint": "^1.26",
+        "symfony/var-dumper": "^8.0",
+        "phpbench/phpbench": "^1.4",
+        "symfony/console": "^7.4"
+    },
     "config": {
         "allow-plugins": {
             "pestphp/pest-plugin": true
         }
-    },
-    "require-dev": {
-        "pestphp/pest": "^4.1",
-        "phpstan/phpstan": "^2.1",
-        "laravel/pint": "^1.26"
     }
 }
