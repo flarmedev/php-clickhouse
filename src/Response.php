@@ -23,7 +23,7 @@ class Response implements ResponseInterface
 
     public function __construct(HttpResponseInterface $response)
     {
-        $this->summary = json_decode($response->getHeaderLine('x-clickhouse-summary'), true);
+        $this->summary = json_decode($response->getHeaderLine('x-clickhouse-summary'), true) ?? [];
         $this->server = $response->getHeaderLine('x-clickhouse-server-display-name');
         $this->queryId = $response->getHeaderLine('x-clickhouse-query-id');
         $this->format = $response->getHeaderLine('x-clickhouse-format');
@@ -42,7 +42,25 @@ class Response implements ResponseInterface
      */
     public function toArray(): array
     {
-        return iterator_to_array($this->rows());
+        $buffer = [];
+
+        if ( ! isset($this->stream)) {
+            return $buffer;
+        }
+
+        rewind($this->stream);
+
+        while ( ! feof($this->stream)) {
+            $line = fgets($this->stream);
+
+            if ( ! $line) {
+                continue;
+            }
+
+            $buffer[] = json_decode($line, true);
+        }
+
+        return $buffer;
     }
 
     public function rows(): Generator
@@ -66,15 +84,25 @@ class Response implements ResponseInterface
 
     public function count(): int
     {
-        rewind($this->stream);
-
-        $content = stream_get_contents($this->stream);
-
-        if ( ! $content || ! mb_strlen($content)) {
+        if ( ! isset($this->stream)) {
             return 0;
         }
 
-        return mb_substr_count($content, PHP_EOL) + 1;
+        rewind($this->stream);
+
+        $count = 0;
+
+        while ( ! feof($this->stream)) {
+            $line = fgets($this->stream);
+
+            if ( ! $line) {
+                continue;
+            }
+
+            $count++;
+        }
+
+        return $count;
     }
 
     public function first(): mixed
@@ -100,21 +128,20 @@ class Response implements ResponseInterface
             return '[]';
         }
 
+        $buffer = '[';
+
         rewind($this->stream);
 
-        $content = stream_get_contents($this->stream);
+        while ( ! feof($this->stream)) {
+            $line = fgets($this->stream);
 
-        if ( ! mb_strlen($content)) {
-            return '[]';
+            if ( ! $line) {
+                continue;
+            }
+
+            $buffer .= strtr($line, [PHP_EOL => ', ']);
         }
 
-        return '[' . mb_rtrim(
-            // Replace new lines with comma and remove tabs
-            strtr(
-                $content,
-                [PHP_EOL => ',', '    {' => '{'],
-            ),
-            ',',
-        ) . ']';
+        return mb_rtrim($buffer, ', ') . ']';
     }
 }

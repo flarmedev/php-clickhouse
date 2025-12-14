@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Flarme\PhpClickhouse;
 
-use DateTimeInterface;
+use Flarme\PhpClickhouse\Concerns\EncodesSql;
 use Flarme\PhpClickhouse\Contracts\QueryInterface;
 use Flarme\PhpClickhouse\Exceptions\UnsupportedBindingException;
-use Stringable;
 
 class Query implements QueryInterface
 {
+    use EncodesSql;
+
     public string $sql;
 
     public array $bindings;
@@ -52,7 +53,9 @@ class Query implements QueryInterface
         $multipart = [];
 
         foreach ($this->bindings as $key => $binding) {
-            $multipart[] = ['name' => 'param_' . $key, 'contents' => $this->encode($binding)];
+            $multipart[] = [
+                'name' => 'param_' . (is_int($key) ? "p{$key}" : $key), 'contents' => $this->encode($binding),
+            ];
         }
 
         $multipart[] = ['name' => 'query', 'contents' => $this->toSql()];
@@ -66,18 +69,53 @@ class Query implements QueryInterface
         $output = '';
         $index = 0;
         $anonymousIndex = 0;
+        $inSingleQuote = false;
+        $inDoubleQuote = false;
 
         while ($index < $length) {
             $char = $query[$index];
 
+            // Track string literals to avoid processing placeholders inside them
+            if ($char === "'" && ! $inDoubleQuote) {
+                // Check for escaped quote
+                if ($index + 1 < $length && $query[$index + 1] === "'") {
+                    $output .= "''";
+                    $index += 2;
+                    continue;
+                }
+                $inSingleQuote = ! $inSingleQuote;
+                $output .= $char;
+                $index++;
+                continue;
+            }
+
+            if ($char === '"' && ! $inSingleQuote) {
+                $inDoubleQuote = ! $inDoubleQuote;
+                $output .= $char;
+                $index++;
+                continue;
+            }
+
+            // Skip placeholder processing inside string literals
+            if ($inSingleQuote || $inDoubleQuote) {
+                $output .= $char;
+                $index++;
+                continue;
+            }
+
             switch ($char) {
                 case '?':
-                    $output .= '{' . $anonymousIndex++ . ':Dynamic}';
+                    $output .= '{p' . $anonymousIndex++ . ':Dynamic}';
                     $index++;
 
                     continue 2;
                 case '{':
                     $end = mb_strpos($query, '}', $index);
+                    if ($end === false) {
+                        $output .= $char;
+                        $index++;
+                        continue 2;
+                    }
                     $colon = mb_strpos($query, ':', $index);
 
                     if ($colon !== false && $colon < $end) {
@@ -92,18 +130,22 @@ class Query implements QueryInterface
                 case ':':
                     $subIndex = $index + 1;
 
-                    while ($subIndex < $length && ($query[$subIndex] === '_' || ctype_alnum($query[$subIndex]))) {
-                        $subIndex++;
+                    // Named parameter must start with a letter or underscore
+                    if ($subIndex < $length && (ctype_alpha($query[$subIndex]) || $query[$subIndex] === '_')) {
+                        while ($subIndex < $length && ($query[$subIndex] === '_' || ctype_alnum($query[$subIndex]))) {
+                            $subIndex++;
+                        }
+
+                        $paramName = mb_substr($query, $index + 1, $subIndex - $index - 1);
+                        $output .= '{' . $paramName . ':Dynamic}';
+                        $index = $subIndex;
+
+                        continue 2;
                     }
 
-                    $subIndex--;
-
-                    if ($subIndex === $index + 1) {
-                        break;
-                    }
-
-                    $output .= '{' . mb_substr($query, $index + 1, $subIndex - $index) . ':Dynamic}';
-                    $index = $subIndex + 1;
+                    // Not a named parameter, just output the colon
+                    $output .= $char;
+                    $index++;
 
                     continue 2;
             }
@@ -127,56 +169,42 @@ class Query implements QueryInterface
         while ($index < $length) {
             $start = mb_strpos($query, '{', $index);
 
-            if ( ! $start) {
+            if ($start === false) {
                 $output .= mb_substr($query, $index);
-                $index = $length;
-
-                continue;
+                break;
             }
 
             $output .= mb_substr($query, $index, $start - $index);
 
-            $key = mb_substr($query, $start + 1, mb_strpos($query, ':', $start) - $start - 1);
-
-            $output .= $this->encodeRaw($bindings[$key]);
-
+            $colonPos = mb_strpos($query, ':', $start);
             $end = mb_strpos($query, '}', $start);
+
+            if ($colonPos === false || $end === false || $colonPos > $end) {
+                // Not a valid placeholder, just output the character and continue
+                $output .= '{';
+                $index = $start + 1;
+                continue;
+            }
+
+            $key = mb_substr($query, $start + 1, $colonPos - $start - 1);
+
+            if (
+                str_starts_with($key, 'p')
+                && is_int($index = (int) mb_substr($key, 1))
+            ) {
+                $key = $index;
+            }
+
+            if (array_key_exists($key, $bindings)) {
+                $output .= $this->encode($bindings[$key]);
+            } else {
+                // Key not found in bindings, output placeholder as-is
+                $output .= mb_substr($query, $start, $end - $start + 1);
+            }
+
             $index = $end + 1;
         }
 
         return $output;
-    }
-
-    /**
-     * @throws UnsupportedBindingException
-     */
-    private function encode(mixed $value): mixed
-    {
-        if ($value instanceof DateTimeInterface) {
-            return $value->getTimestamp();
-        }
-
-        if ($value instanceof Stringable) {
-            return (string) $value;
-        }
-
-        return match (gettype($value)) {
-            'boolean', 'integer', 'double', 'string' => $value,
-            'NULL' => '\N',
-            'array' => '[' . implode(', ', array_map(fn($item) => $this->encodeRaw($item), $value)) . ']',
-            default => throw new UnsupportedBindingException(),
-        };
-    }
-
-    /**
-     * @throws UnsupportedBindingException
-     */
-    private function encodeRaw(mixed $value): mixed
-    {
-        if (is_string($value) || $value instanceof Stringable) {
-            return "'" . strtr((string) $value, ['\'' => '\'\'', '\\' => '\\\\']) . "'";
-        }
-
-        return $this->encode($value);
     }
 }
