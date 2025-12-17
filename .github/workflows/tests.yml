@@ -52,10 +52,28 @@ jobs:
         php: ['8.4']
 
     services:
-      clickhouse:
+      replica-one:
         image: clickhouse/clickhouse-server:latest
         ports:
           - 8123:8123
+        volumes:
+          - ./docker/common.xml:/etc/clickhouse-server/config.d/common.xml
+          - ./docker/replica-one.xml:/etc/clickhouse-server/config.d/replica-one.xml
+        env:
+          CLICKHOUSE_DB: database
+          CLICKHOUSE_USER: user
+          CLICKHOUSE_PASSWORD: password
+        options: >-
+          --health-cmd "clickhouse-client --query 'SELECT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      replica-two:
+        image: clickhouse/clickhouse-server:latest
+        volumes:
+          - ./docker/common.xml:/etc/clickhouse-server/config.d/common.xml
+          - ./docker/replica-two.xml:/etc/clickhouse-server/config.d/replica-two.xml
         env:
           CLICKHOUSE_DB: database
           CLICKHOUSE_USER: user
@@ -102,7 +120,7 @@ jobs:
       - name: Run feature tests
         run: vendor/bin/pest --testsuite=Feature
         env:
-          CLICKHOUSE_HOST: localhost
+          CLICKHOUSE_HOST: replica-one
           CLICKHOUSE_PORT: 8123
           CLICKHOUSE_USERNAME: user
           CLICKHOUSE_PASSWORD: password
