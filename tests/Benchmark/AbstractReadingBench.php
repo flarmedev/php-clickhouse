@@ -25,7 +25,7 @@ abstract class AbstractReadingBench
             port: (int) ($_ENV['CLICKHOUSE_PORT'] ?? 8123),
             username: $_ENV['CLICKHOUSE_USERNAME'] ?? 'user',
             password: $_ENV['CLICKHOUSE_PASSWORD'] ?? 'password',
-            database: $database ?? $_ENV['CLICKHOUSE_DATABASE'] ?? 'database',
+            database: $_ENV['CLICKHOUSE_DATABASE'] ?? 'database',
         );
 
         $this->response = $client->execute("SELECT number, 'REF-1T8H' as ref, 789.23 as amount, true as bool, toDateTime('2023-01-02 03:46:41') as created_at FROM system.numbers LIMIT {$this->count};");

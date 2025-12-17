@@ -110,9 +110,9 @@ class JoinClause
         return $this->addStrictness('ASOF');
     }
 
-    protected function onNested(Closure $callback, string $boolean = 'AND'): static
+    protected function onNested(Closure $callback, string $boolean = 'AND'): self
     {
-        $join = new static($this->parentQuery, $this->type, $this->table);
+        $join = new self($this->parentQuery, $this->type, $this->table);
         $callback($join);
 
         if (count($join->clauses) > 0) {
