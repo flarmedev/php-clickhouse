@@ -1,127 +1,97 @@
 name: Tests
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    push:
+        branches: [ main ]
+    pull_request:
+        branches: [ main ]
 
 jobs:
-  unit-tests:
-    name: Unit Tests (PHP ${{ matrix.php }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        php: ['8.4']
+    unit-tests:
+        name: Unit Tests (PHP ${{ matrix.php }})
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                php: [ '8.4' ]
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          extensions: mbstring, json, curl
-          coverage: xdebug
+            -   name: Setup PHP
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: ${{ matrix.php }}
+                    extensions: mbstring, json, curl
+                    coverage: xdebug
 
-      - name: Get Composer cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+            -   name: Get Composer cache directory
+                id: composer-cache
+                run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
-      - name: Cache Composer dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+            -   name: Cache Composer dependencies
+                uses: actions/cache@v4
+                with:
+                    path: ${{ steps.composer-cache.outputs.dir }}
+                    key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+                    restore-keys: ${{ runner.os }}-composer-
 
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
+            -   name: Install dependencies
+                run: composer install --prefer-dist --no-progress
 
-      - name: Run unit tests
-        run: vendor/bin/pest --testsuite=Unit --coverage --min=80
+            -   name: Run unit tests
+                run: vendor/bin/pest --testsuite=Unit --coverage --min=80
 
-  feature-tests:
-    name: Feature Tests (PHP ${{ matrix.php }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        php: ['8.4']
+    feature-tests:
+        name: Feature Tests (PHP ${{ matrix.php }})
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                php: [ '8.4' ]
 
-    services:
-      replica-one:
-        image: clickhouse/clickhouse-server:latest
-        ports:
-          - 8123:8123
-        volumes:
-          - ./docker/common.xml:/etc/clickhouse-server/config.d/common.xml
-          - ./docker/replica-one.xml:/etc/clickhouse-server/config.d/replica-one.xml
-        env:
-          CLICKHOUSE_DB: database
-          CLICKHOUSE_USER: user
-          CLICKHOUSE_PASSWORD: password
-        options: >-
-          --health-cmd "clickhouse-client --query 'SELECT 1'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@v4
 
-      replica-two:
-        image: clickhouse/clickhouse-server:latest
-        volumes:
-          - ./docker/common.xml:/etc/clickhouse-server/config.d/common.xml
-          - ./docker/replica-two.xml:/etc/clickhouse-server/config.d/replica-two.xml
-        env:
-          CLICKHOUSE_DB: database
-          CLICKHOUSE_USER: user
-          CLICKHOUSE_PASSWORD: password
-        options: >-
-          --health-cmd "clickhouse-client --query 'SELECT 1'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+            -   name: Setup PHP
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: ${{ matrix.php }}
+                    extensions: mbstring, json, curl
+                    coverage: none
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+            -   name: Get Composer cache directory
+                id: composer-cache
+                run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          extensions: mbstring, json, curl
-          coverage: none
+            -   name: Cache Composer dependencies
+                uses: actions/cache@v4
+                with:
+                    path: ${{ steps.composer-cache.outputs.dir }}
+                    key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+                    restore-keys: ${{ runner.os }}-composer-
 
-      - name: Get Composer cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+            -   name: Install dependencies
+                run: composer install --prefer-dist --no-progress
 
-      - name: Cache Composer dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+            -   name: Start services
+                run: docker compose up -d
 
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
+            -   name: Wait for ClickHouse
+                run: |
+                    for i in {1..30}; do
+                      curl -s http://localhost:8123/ping && break
+                      echo "Waiting for ClickHouse..."
+                      sleep 2
+                    done
 
-      - name: Wait for ClickHouse
-        run: |
-          for i in {1..30}; do
-            curl -s http://localhost:8123/ping && break
-            echo "Waiting for ClickHouse..."
-            sleep 2
-          done
-
-      - name: Run feature tests
-        run: vendor/bin/pest --testsuite=Feature
-        env:
-          CLICKHOUSE_HOST: replica-one
-          CLICKHOUSE_PORT: 8123
-          CLICKHOUSE_USERNAME: user
-          CLICKHOUSE_PASSWORD: password
-          CLICKHOUSE_DATABASE: database
+            -   name: Run feature tests
+                run: vendor/bin/pest --testsuite=Feature
+                env:
+                    CLICKHOUSE_HOST: replica-one
+                    CLICKHOUSE_PORT: 8123
+                    CLICKHOUSE_USERNAME: user
+                    CLICKHOUSE_PASSWORD: password
+                    CLICKHOUSE_DATABASE: database
