@@ -89,14 +89,14 @@ class Builder
         $this->grammar = new Grammar();
     }
 
-    public static function query(?ClientInterface $client = null): static
+    public static function query(?ClientInterface $client = null): self
     {
         return new self($client);
     }
 
-    public function newQuery(): static
+    public function newQuery(): self
     {
-        return new static($this->client);
+        return static::query($this->client);
     }
 
     public function forSubQuery(): static

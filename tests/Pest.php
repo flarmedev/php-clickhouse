@@ -16,15 +16,6 @@ uses(Tests\TestCase::class)->in('Feature');
 |--------------------------------------------------------------------------
 */
 
-expect()->extend('toMatchArray', function (array $expected) {
-    foreach ($expected as $key => $value) {
-        expect($this->value)->toHaveKey($key);
-        expect($this->value[$key])->toBe($value);
-    }
-
-    return $this;
-});
-
 /*
 |--------------------------------------------------------------------------
 | Functions

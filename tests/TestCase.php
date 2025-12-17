@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
-    protected Client $client {
+    public protected(set) Client $client {
         get {
             return $this->client ?? $this->createClient();
         }

@@ -7,11 +7,11 @@ use Flarme\PhpClickhouse\Response;
 
 describe('Clickhouse connection', function (): void {
     it('connects to clickhouse', function (): void {
-        expect($this->createClient()->execute('SELECT 1'))->toBeInstanceOf(Response::class);
+        expect($this->client->execute('SELECT 1'))->toBeInstanceOf(Response::class);
     });
 
     it('throws exception on error', function (): void {
-        expect(fn() => $this->createClient()->execute('SELEC'))->toThrow(ClickhouseException::class);
+        expect(fn() => $this->client->execute('SELEC'))->toThrow(ClickhouseException::class);
     });
 });
 
