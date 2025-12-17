@@ -90,7 +90,7 @@ jobs:
             -   name: Run feature tests
                 run: vendor/bin/pest --testsuite=Feature
                 env:
-                    CLICKHOUSE_HOST: replica-one
+                    CLICKHOUSE_HOST: localhost
                     CLICKHOUSE_PORT: 8123
                     CLICKHOUSE_USERNAME: user
                     CLICKHOUSE_PASSWORD: password
