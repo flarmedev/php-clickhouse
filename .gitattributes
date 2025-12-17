@@ -1,0 +1,38 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# PHP files
+*.php text eol=lf
+
+# Shell scripts
+*.sh text eol=lf
+
+# Windows batch files
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Documentation
+*.md text eol=lf
+*.txt text eol=lf
+
+# Config files
+*.json text eol=lf
+*.xml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.neon text eol=lf
+
+# Export ignore (excluded from releases)
+/.github/             export-ignore
+/.gitattributes       export-ignore
+/.gitignore           export-ignore
+/.editorconfig        export-ignore
+/.qodo/               export-ignore
+/docker/              export-ignore
+/docker-compose.yml   export-ignore
+/tests/               export-ignore
+/phpunit.xml          export-ignore
+/phpstan.neon         export-ignore
+/phpbench.json        export-ignore
+/pint.json            export-ignore
+/package.json         export-ignore
