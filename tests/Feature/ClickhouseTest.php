@@ -2,29 +2,35 @@
 
 declare(strict_types=1);
 
+use Flarme\PhpClickhouse\Client;
 use Flarme\PhpClickhouse\Exceptions\ClickhouseException;
 use Flarme\PhpClickhouse\Response;
 
+function client(): Client
+{
+    return test()->client;
+}
+
 describe('Clickhouse connection', function (): void {
     it('connects to clickhouse', function (): void {
-        expect($this->client->execute('SELECT 1'))->toBeInstanceOf(Response::class);
+        expect(client()->execute('SELECT 1'))->toBeInstanceOf(Response::class);
     });
 
     it('throws exception on error', function (): void {
-        expect(fn() => $this->client->execute('SELEC'))->toThrow(ClickhouseException::class);
+        expect(fn() => client()->execute('SELEC'))->toThrow(ClickhouseException::class);
     });
 });
 
 describe('Clickhouse inserts', function (): void {
-    beforeEach(fn() => $this->client->execute(
+    beforeEach(fn() => client()->execute(
         <<<SQL
         CREATE TABLE IF NOT EXISTS mem_table (id UInt64, reference String, created_at DateTime64) ENGINE = Memory
         SQL
     ));
-    afterEach(fn() => $this->client->execute('DROP TABLE IF EXISTS mem_table'));
+    afterEach(fn() => client()->execute('DROP TABLE IF EXISTS mem_table'));
 
     it('inserts data into tables', function (): void {
-        $res = $this->client->insert('mem_table', [
+        $res = client()->insert('mem_table', [
             ['id' => 1, 'reference' => 'T-001', 'created_at' => time()],
             ['id' => 2, 'reference' => 'T-002', 'created_at' => time()],
             ['id' => 3, 'reference' => 'T-003', 'created_at' => time()],
@@ -35,7 +41,7 @@ describe('Clickhouse inserts', function (): void {
 });
 
 describe('Clickhouse DDL queries', function (): void {
-    beforeEach(fn() => $this->client->execute(
+    beforeEach(fn() => client()->execute(
         <<<SQL
         CREATE TABLE IF NOT EXISTS ddl_table ON CLUSTER test_cluster (id UInt64)
         ENGINE = ReplicatedMergeTree('/clickhouse/tables/{shard}/{table}','{replica}')
@@ -43,7 +49,7 @@ describe('Clickhouse DDL queries', function (): void {
         SQL
     ));
 
-    afterEach(fn() => $this->client->execute(
+    afterEach(fn() => client()->execute(
         <<<SQL
         DROP TABLE IF EXISTS ddl_table ON CLUSTER test_cluster
         SETTINGS database_atomic_wait_for_drop_and_detach_synchronously=1;
@@ -51,14 +57,14 @@ describe('Clickhouse DDL queries', function (): void {
     ));
 
     it('executes DDL queries', function (): void {
-        $res = $this->client->execute('ALTER TABLE ddl_table ON CLUSTER test_cluster ADD COLUMN name String;');
+        $res = client()->execute('ALTER TABLE ddl_table ON CLUSTER test_cluster ADD COLUMN name String;');
 
         // DDL status
         expect($res->toArray())->toHaveCount(2);
     });
 
     it('inserts data in DDL queries', function (): void {
-        $res = $this->client->insert('ddl_table', [
+        $res = client()->insert('ddl_table', [
             ['id' => 1],
             ['id' => 2],
         ]);
