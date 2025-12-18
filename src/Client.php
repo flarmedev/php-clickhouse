@@ -165,7 +165,7 @@ class Client implements ClientInterface
         string $format = 'JSONEachRow',
         ?array $columns = null
     ): ResponseInterface {
-        if ( ! $file) {
+        if ( ! is_resource($file)) {
             throw new ClickhouseException("File not found");
         }
 
@@ -186,7 +186,7 @@ class Client implements ClientInterface
                     'x-clickhouse-format' => $format,
                 ],
                 'query' => ['query' => $query],
-                'body' => stream_get_contents($file),
+                'body' => $file,
             ]);
         } catch (Exception $e) {
             throw new ClickhouseException($e->getMessage(), $e->getCode(), $e);
