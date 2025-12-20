@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Flarme\PhpClickhouse\Integrations\Laravel;
 
 use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
 
-class ClickhouseServiceProvider extends ServiceProvider implements DeferrableProvider
+class ClickhouseServiceProvider extends ServiceProvider
 {
     /**
      * Register the service provider.
