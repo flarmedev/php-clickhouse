@@ -2,9 +2,9 @@
 
 A modern, fluent, and high-performance ClickHouse driver for PHP.
 
-[![Tests](https://github.com/flarmedev/php-clickhouse/workflows/tests/badge.svg)](https://github.com/flarmedev/php-clickhouse/actions)
+[![Tests](https://github.com/flarmedev/php-clickhouse/workflows/Tests/badge.svg)](https://github.com/flarmedev/php-clickhouse/actions)
 [![Latest Version](https://img.shields.io/packagist/v/flarmedev/php-clickhouse.svg)](https://packagist.org/packages/flarmedev/php-clickhouse)
-[![License](https:///packagist/l/flarmedev/php-clickhouse.svg)](LICENSE)
+[![License](https://img.shields.io/packagist/l/flarmedev/php-clickhouse)](LICENSE)
 
 ## Features
 
