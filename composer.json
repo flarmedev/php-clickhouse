@@ -58,7 +58,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Flarme\\PhpClickhouse\\Extra\\Laravel\\ClickhouseServiceProvider"
+                "Flarme\\PhpClickhouse\\Integrations\\Laravel\\ClickhouseServiceProvider"
             ]
         }
     },
