@@ -59,10 +59,7 @@
         "laravel": {
             "providers": [
                 "Flarme\\PhpClickhouse\\Extra\\Laravel\\ClickhouseServiceProvider"
-            ],
-            "aliases": {
-                "Clickhouse": "Flarme\\PhpClickhouse\\Extra\\Laravel\\ClickhouseFacade"
-            }
+            ]
         }
     },
     "suggest": {
