@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Flarme\PhpClickhouse\Extra\Laravel\Facades;
+namespace Flarme\PhpClickhouse\Integrations\Laravel\Facades;
 
 use Flarme\PhpClickhouse\Query\Builder;
 use Illuminate\Support\Facades\Facade;

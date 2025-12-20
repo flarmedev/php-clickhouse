@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Flarme\PhpClickhouse\Extra\Laravel;
+namespace Flarme\PhpClickhouse\Integrations\Laravel;
 
 use Flarme\PhpClickhouse\Client;
 use Illuminate\Contracts\Foundation\Application;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Flarme\PhpClickhouse\Extra\Laravel;
+namespace Flarme\PhpClickhouse\Integrations\Laravel;
 
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Support\DeferrableProvider;

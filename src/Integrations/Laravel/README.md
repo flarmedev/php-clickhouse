@@ -26,7 +26,7 @@ CLICKHOUSE_SECURE=false
 ### Using the Facade
 
 ```php
-use Flarme\PhpClickhouse\Extra\Laravel\Facades\Clickhouse as Clickhouse;
+use Flarme\PhpClickhouse\Integrations\Laravel\Facades\Clickhouse as Clickhouse;
 
 // Execute a query
 $result = Clickhouse::execute('SELECT * FROM users LIMIT 10');
@@ -103,7 +103,7 @@ Clickhouse::setDefaultConnection('analytics');
 ### Using the Manager
 
 ```php
-use Flarme\PhpClickhouse\Extra\Laravel\ClickhouseManager;
+use Flarme\PhpClickhouse\Integrations\Laravel\ClickhouseManager;
 
 class AnalyticsService
 {

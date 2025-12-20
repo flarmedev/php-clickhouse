@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Flarme\PhpClickhouse\Extra\Laravel\Facades;
+namespace Flarme\PhpClickhouse\Integrations\Laravel\Facades;
 
 use Flarme\PhpClickhouse\Client;
 use Flarme\PhpClickhouse\Contracts\ResponseInterface;
@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static string getDefaultConnection()
  * @method static void setDefaultConnection(string $name)
  *
- * @see \Flarme\PhpClickhouse\Extra\Laravel\ClickhouseManager
+ * @see \Flarme\PhpClickhouse\Integrations\Laravel\ClickhouseManager
  * @see Client
  */
 class Clickhouse extends Facade
