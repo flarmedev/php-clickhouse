@@ -36,9 +36,11 @@
     },
     "autoload": {
         "psr-4": {
-            "Flarme\\PhpClickhouse\\": "src/",
-            "Flarme\\PhpClickhouse\\Extra\\Laravel\\": "src/extra/Laravel/"
-        }
+            "Flarme\\PhpClickhouse\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
