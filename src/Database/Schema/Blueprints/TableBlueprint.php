@@ -6,6 +6,7 @@ namespace Flarme\PhpClickhouse\Database\Schema\Blueprints;
 
 use Closure;
 use Flarme\PhpClickhouse\Database\Schema\Components\Column;
+use Flarme\PhpClickhouse\Expressions\Raw;
 
 class TableBlueprint extends Blueprint
 {
@@ -556,8 +557,11 @@ class TableBlueprint extends Blueprint
     /**
      * Use ReplicatedReplacingMergeTree engine.
      */
-    public function replicatedReplacingMergeTree(string $zkPath, string $replicaName, ?string $versionColumn = null): self
-    {
+    public function replicatedReplacingMergeTree(
+        string $zkPath,
+        string $replicaName,
+        ?string $versionColumn = null
+    ): self {
         $params = [$zkPath, $replicaName];
         if ($versionColumn) {
             $params[] = $versionColumn;
@@ -573,7 +577,7 @@ class TableBlueprint extends Blueprint
     {
         $params = [$cluster, $database, $table];
         if ($shardingKey) {
-            $params[] = $shardingKey;
+            $params[] = new Raw($shardingKey);
         }
 
         return $this->engine('Distributed', ...$params);
@@ -625,7 +629,18 @@ class TableBlueprint extends Blueprint
         int $minBytes,
         int $maxBytes,
     ): self {
-        return $this->engine('Buffer', $database, $table, $numLayers, $minTime, $maxTime, $minRows, $maxRows, $minBytes, $maxBytes);
+        return $this->engine(
+            'Buffer',
+            $database,
+            $table,
+            $numLayers,
+            $minTime,
+            $maxTime,
+            $minRows,
+            $maxRows,
+            $minBytes,
+            $maxBytes
+        );
     }
 
     /**

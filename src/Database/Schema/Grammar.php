@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flarme\PhpClickhouse\Database\Schema;
 
+use Flarme\PhpClickhouse\Contracts\ExpressionInterface;
 use Flarme\PhpClickhouse\Database\Schema\Blueprints\DatabaseBlueprint;
 use Flarme\PhpClickhouse\Database\Schema\Blueprints\DictionaryBlueprint;
 use Flarme\PhpClickhouse\Database\Schema\Blueprints\TableBlueprint;
@@ -780,6 +781,10 @@ class Grammar
      */
     protected function compileValue(mixed $value): string
     {
+        if ($value instanceof ExpressionInterface) {
+            return (string) $value;
+        }
+
         if ($value === null) {
             return 'NULL';
         }
