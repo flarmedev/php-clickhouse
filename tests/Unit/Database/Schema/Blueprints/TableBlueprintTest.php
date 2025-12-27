@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Flarme\PhpClickhouse\Database\Schema\Blueprints\TableBlueprint;
 use Flarme\PhpClickhouse\Database\Schema\Components\Column;
+use Flarme\PhpClickhouse\Expressions\Raw;
 
 describe('TableBlueprint', function (): void {
     describe('construction', function (): void {
@@ -453,7 +454,9 @@ describe('TableBlueprint', function (): void {
             it('sets Distributed engine with sharding key', function (): void {
                 $blueprint = new TableBlueprint('test');
                 $blueprint->distributed('cluster', 'db', 'table', 'rand()');
-                expect($blueprint->getEngineParams())->toBe(['cluster', 'db', 'table', 'rand()']);
+                expect($blueprint->getEngineParams())->toEqual([
+                    'cluster', 'db', 'table', new Raw('rand()'),
+                ]);
             });
         });
 
@@ -486,7 +489,9 @@ describe('TableBlueprint', function (): void {
                 $blueprint = new TableBlueprint('test');
                 $blueprint->buffer('db', 'table', 16, 10, 100, 10000, 1000000, 10000000, 100000000);
                 expect($blueprint->getEngine())->toBe('Buffer')
-                    ->and($blueprint->getEngineParams())->toBe(['db', 'table', 16, 10, 100, 10000, 1000000, 10000000, 100000000]);
+                    ->and($blueprint->getEngineParams())->toBe([
+                        'db', 'table', 16, 10, 100, 10000, 1000000, 10000000, 100000000,
+                    ]);
             });
         });
 
