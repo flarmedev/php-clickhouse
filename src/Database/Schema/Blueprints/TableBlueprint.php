@@ -36,6 +36,8 @@ class TableBlueprint extends Blueprint
 
     protected bool $temporary = false;
 
+    protected string|Raw|null $asTable = null;
+
     // ==================== GETTERS ====================
 
     /** @return Column[] */
@@ -92,6 +94,11 @@ class TableBlueprint extends Blueprint
     public function getAsSelect(): ?string
     {
         return $this->asSelect;
+    }
+
+    public function getAsTable(): string|Raw|null
+    {
+        return $this->asTable;
     }
 
     public function isTemporary(): bool
@@ -549,7 +556,7 @@ class TableBlueprint extends Blueprint
     /**
      * Use ReplicatedMergeTree engine.
      */
-    public function replicatedMergeTree(string $zkPath, string $replicaName): self
+    public function replicatedMergeTree(string|Raw $zkPath, string|Raw $replicaName): self
     {
         return $this->engine('ReplicatedMergeTree', $zkPath, $replicaName);
     }
@@ -558,8 +565,8 @@ class TableBlueprint extends Blueprint
      * Use ReplicatedReplacingMergeTree engine.
      */
     public function replicatedReplacingMergeTree(
-        string $zkPath,
-        string $replicaName,
+        string|Raw $zkPath,
+        string|Raw $replicaName,
         ?string $versionColumn = null
     ): self {
         $params = [$zkPath, $replicaName];
@@ -573,11 +580,11 @@ class TableBlueprint extends Blueprint
     /**
      * Use Distributed engine.
      */
-    public function distributed(string $cluster, string $database, string $table, ?string $shardingKey = null): self
+    public function distributed(string $cluster, string|Raw $database, string|Raw $table, string|Raw|null $shardingKey = null): self
     {
         $params = [$cluster, $database, $table];
         if ($shardingKey) {
-            $params[] = new Raw($shardingKey);
+            $params[] = $shardingKey;
         }
 
         return $this->engine('Distributed', ...$params);
@@ -670,7 +677,7 @@ class TableBlueprint extends Blueprint
     /**
      * Use URL engine.
      */
-    public function url(string $url, string $format): self
+    public function url(string|Raw $url, string $format): self
     {
         return $this->engine('URL', $url, $format);
     }
@@ -686,7 +693,7 @@ class TableBlueprint extends Blueprint
     /**
      * Use Merge engine.
      */
-    public function merge(string $database, string $tableRegexp): self
+    public function merge(string|Raw $database, string|Raw $tableRegexp): self
     {
         return $this->engine('Merge', $database, $tableRegexp);
     }
@@ -767,6 +774,16 @@ class TableBlueprint extends Blueprint
     public function asSelect(string $query): self
     {
         $this->asSelect = $query;
+
+        return $this;
+    }
+
+    /**
+     * Create table from another table.
+     */
+    public function as(string|Raw $table): self
+    {
+        $this->asTable = $table;
 
         return $this;
     }

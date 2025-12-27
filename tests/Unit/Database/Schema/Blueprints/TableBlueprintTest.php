@@ -657,6 +657,17 @@ describe('TableBlueprint', function (): void {
             });
         });
 
+        describe('as', function (): void {
+            it('sets AS table', function (): void {
+                $blueprint = new TableBlueprint('test');
+
+                $result = $blueprint->as('other_table');
+
+                expect($result)->toBe($blueprint)
+                    ->and($blueprint->getAsTable())->toBe('other_table');
+            });
+        });
+
         describe('temporary', function (): void {
             it('sets temporary flag', function (): void {
                 $blueprint = new TableBlueprint('test');

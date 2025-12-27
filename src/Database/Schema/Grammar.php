@@ -11,6 +11,7 @@ use Flarme\PhpClickhouse\Database\Schema\Blueprints\TableBlueprint;
 use Flarme\PhpClickhouse\Database\Schema\Blueprints\ViewBlueprint;
 use Flarme\PhpClickhouse\Database\Schema\Components\Attribute;
 use Flarme\PhpClickhouse\Database\Schema\Components\Column;
+use Flarme\PhpClickhouse\Expressions\Raw;
 
 class Grammar
 {
@@ -89,8 +90,12 @@ class Grammar
             $sql .= ' ON CLUSTER ' . $this->wrap($blueprint->getOnCluster());
         }
 
+        if ($blueprint->getAsTable()) {
+            $sql .= ' AS ' . $this->wrapOrExpression($blueprint->getAsTable());
+        }
+
         // Columns
-        if ($blueprint->getColumns()) {
+        if (! $blueprint->getAsTable() && $blueprint->getColumns()) {
             $sql .= ' (' . $this->compileColumns($blueprint->getColumns()) . ')';
         }
 
@@ -766,6 +771,18 @@ class Grammar
         }
 
         return '`' . str_replace('`', '``', $value) . '`';
+    }
+
+    /**
+     * Wrap an identifier or compile an expression.
+     */
+    protected function wrapOrExpression(string|Raw $value): string
+    {
+        if ($value instanceof Raw) {
+            return (string) $value;
+        }
+
+        return $this->wrap($value);
     }
 
     /**
